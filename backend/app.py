@@ -9,7 +9,7 @@ app = Flask(__name__)
 CORS(app)
 
 # === Load the trained gesture recognition model ===
-model_path = os.path.join(os.path.dirname(__file__), '../frontend/model/gesture_model.pkl')
+model_path = os.path.join(os.path.dirname(__file__), 'gesture_model.pkl')
 model = None
 
 try:
