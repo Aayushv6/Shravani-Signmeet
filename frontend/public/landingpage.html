@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gesture Recorder & Predictor</title>
+  <style>
+    * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html, body {
+    scroll-behavior: smooth;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Prevent scrolling */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f0f4ff, #d9e9ff);
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  
+  .main-container {
+    width: 100%;
+    max-width: 1400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .prediction-wrapper {
+    margin-top: 10px;
+    width: 100%;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: left;
+  
+    /* Remove max-width or set it to 100% */
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .prediction-wrapper h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  #prediction {
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+    padding: 10px;
+    background: linear-gradient(135deg, #33d2ff, #1ea9ff);
+    border: 2px solid #c3e6cb;
+    border-radius: 8px;
+    min-height: 40px;
+    word-wrap: break-word;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease-in-out;
+  }
+  /* Flex layout for video and chat */
+  .main-content {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex: 1;
+  }
+  
+  /* Video area: wider */
+  .video-wrapper {
+    position: relative;
+    flex: 0 0 60%;
+    max-width: 63%;
+    height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  #video, #canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  
+  #video {
+    object-fit: cover;
+    z-index: 0;
+  }
+  
+  #canvas {
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  /* Chat area: narrower */
+  .chat-box {
+    flex: 0 0 25%;
+    max-width: 25%;
+    height: 500px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .chat-box h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #d9e9ff;
+    margin-bottom: 10px;
+  }
+  
+  .chat-messages::-webkit-scrollbar {
+    width: 8px;
+  }
+  .chat-messages::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+  }
+  
+  .chat-input {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .chat-input input[type="text"] {
+    flex: 1;
+    padding: 10px 15px;
+    font-size: 14px;
+    border: 2px solid #ced4da;
+    border-radius: 8px;
+    background-color: #f0f4ff;
+  }
+  .chat-input input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  .chat-input button {
+    padding: 10px 16px;
+    font-size: 14px;
+    background: linear-gradient(135deg, #33d2ff, #1ea9ff);
+    border: none;
+    border-radius: 8px;
+    color:white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  #gestureLabel {
+    width: 580px; /* You can adjust this value as needed */
+    padding: 10px 15px;
+    border: 2px solid #d0e6ff;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background-color: #f5faff;
+    color: #003366;
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.1);
+    transition: border 0.3s ease;
+  }
+  
+  #gestureLabel:focus {
+    border-color: #66b2ff;
+    background-color: #ffffff;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Adjust the gap size as needed */
+  }
+  .controls button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  /* 🎬 Start/Stop Recording */
+  .controls button:nth-child(2) {
+    background: linear-gradient(135deg, #33d2ff, #1ea9ff);
+
+  }
+
+  /* ⬇️ Download Data */
+  .controls button:nth-child(3) {
+    background: linear-gradient(135deg, #33d2ff, #1ea9ff);
+
+  }
+
+  /* 🗑️ Delete Data */
+  .controls button:nth-child(4) {
+    background: linear-gradient(135deg, #33d2ff, #1ea9ff);
+
+  }
+
+  /* 🤖 Toggle Prediction */
+  .controls button:nth-child(5) {
+    background: linear-gradient(135deg, #33d2ff, #1ea9ff);
+
+  }
+
+  .controls button:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+  /* Responsive */
+  @media (max-width: 1024px) {
+    html, body {
+      overflow: auto;
+    }
+  
+    .main-content {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .video-wrapper,
+    .chat-box {
+      width: 100%;
+      max-width: 100%;
+    }
+  
+    .chat-box {
+      height: auto;
+      margin-top: 20px;
+    }
+  }
+  
+  </style>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"
+        integrity="sha384-rSYbDcbnJH7s6M20AxvS50pxYunO82zQ63Ilm3h5uWeIRmASfFLs51KfAt+cLQ8P"
+        crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+</head>
+<body>
+    <!-- Prediction Output at Top -->
+    <div class="prediction-wrapper" style="margin-bottom: 20px; width: 90%;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div id="prediction">None</div>
+        <button id="refreshPredictionBtn" style="margin-left: 10px; padding: 6px 12px; font-size: 12px; border-radius: 6px; background: linear-gradient(135deg, #33d2ff, #1ea9ff);
+        border: none; color: white; cursor: pointer;">
+          🔁 Refresh
+        </button>
+      </div>
+      
+    </div>
+  
+    <!-- Main Video and Chat Section -->
+    <div style="display: flex; justify-content: center; gap: 30px; width: 100%;">
+      
+      <!-- Video Section -->
+      <div class="video-wrapper" style="flex: 1; display: flex; justify-content: center;">
+        <video id="video" width="640" height="480" autoplay muted></video>
+        <canvas id="canvas" width="640" height="480" style="position: absolute;"></canvas>
+      </div>
+  
+      <!-- Chat Section -->
+      <div class="chat-box" style="width: 30%; min-width: 280px;">
+        <h2>Chat</h2>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input">
+          <input type="text" id="chat-input" readonly placeholder="Words will appear here..." />
+          <button onclick="sendChatMessage()">Send</button>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Controls at Bottom -->
+    <div class="controls" style="margin-top: 40px;">
+      <input type="text" id="gestureLabel" placeholder="Enter gesture label" />
+      <button onclick="toggleRecording()">🎬 Start/Stop Recording</button>
+      <button onclick="downloadData()">⬇️ Download Data</button>
+      <button onclick="deleteData()">🗑️ Delete Data</button>
+      <button onclick="togglePrediction()">🤖 Toggle Prediction</button>
+    </div>
+  
+
+
+<script>
+  const videoElement = document.getElementById('video');
+  const canvasElement = document.getElementById('canvas');
+  const predictionElement = document.getElementById('prediction');
+  const gestureInput = document.getElementById('gestureLabel');
+  const chatContainer = document.getElementById("chat-messages");
+  const messageInput = document.getElementById("chat-input");
+  const sendButton = document.getElementById("send-button"); // Add a button for sending message
+
+  let recording = false;
+  let predicting = false;
+  let collectedData = JSON.parse(localStorage.getItem('gestureData')) || [];
+  let lastAddedLabel = "";
+  let currentSentence = "";
+  let lastPredictedLabel = "";
+  let displayWord = "";
+  let sameGestureCounter = 0;
+  const gestureHoldThreshold = 10;
+  let lastGestureTimestamp = 0;
+
+  const hands = new Hands({ locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
+  hands.setOptions({
+    maxNumHands: 2,
+    modelComplexity: 1,
+    minDetectionConfidence: 0.7,
+    minTrackingConfidence: 0.7
+  });
+
+  const ctx = canvasElement.getContext('2d');
+
+  hands.onResults(results => {
+    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    displayWord = "";
+
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+      results.multiHandLandmarks.forEach(handLandmarks => {
+        drawLandmarks(handLandmarks);
+        const landmarks = handLandmarks.flatMap(lm => [lm.x, lm.y, lm.z]);
+
+        if (recording) {
+          const label = gestureInput.value.trim();
+          if (label) {
+            collectedData.push({ landmarks, label });
+            localStorage.setItem('gestureData', JSON.stringify(collectedData));
+          }
+        }
+
+        if (predicting && collectedData.length > 0) {
+          let bestMatch = null;
+          let highestSimilarity = 0;
+
+          collectedData.forEach(gestureData => {
+            const similarity = compareLandmarks(gestureData.landmarks, landmarks);
+            if (similarity > highestSimilarity) {
+              highestSimilarity = similarity;
+              bestMatch = gestureData;
+            }
+          });
+
+          if (bestMatch && highestSimilarity > 0.8) {
+            const label = bestMatch.label;
+
+            if (label === lastPredictedLabel) {
+              sameGestureCounter++;
+            } else {
+              sameGestureCounter = 0;
+              lastAddedLabel = "";
+            }
+
+            const currentTimestamp = Date.now();
+
+            if (
+              sameGestureCounter >= gestureHoldThreshold &&
+              currentTimestamp - lastGestureTimestamp > 1000 &&
+              label !== lastAddedLabel
+            ) {
+              currentSentence += label + " ";
+              lastGestureTimestamp = currentTimestamp;
+              lastAddedLabel = label;
+              sameGestureCounter = 0;
+            }
+
+            displayWord = label;
+            lastPredictedLabel = label;
+          }
+        }
+      });
+
+      if (predicting) {
+        predictionElement.textContent = currentSentence.trim();
+      }
+    } else {
+      if (predicting) {
+        predictionElement.textContent = currentSentence.trim();
+        drawPredictionText("");
+      }
+    }
+  });
+
+  const camera = new Camera(videoElement, {
+    onFrame: async () => await hands.send({ image: videoElement }),
+    width: 640,
+    height: 480
+  });
+  camera.start();
+
+  function toggleRecording() {
+    recording = !recording;
+    alert(recording ? "🎥 Recording started!" : "⏹️ Recording stopped!");
+  }
+  document.getElementById("refreshPredictionBtn").addEventListener("click", () => {
+    predictionElement.textContent = "None";
+    lastPredictedLabel = "";
+    lastAddedLabel = "";
+    currentSentence = "";
+    sameGestureCounter = 0;
+    lastGestureTimestamp = 0;
+    displayWord = "";
+  
+    predicting = true; // Just ensures it's running again
+  });
+  
+  function togglePrediction() {
+    predicting = !predicting;
+    predictionElement.textContent = predicting ? "Waiting..." : "None";
+    lastPredictedLabel = "";
+    alert(predicting ? "🤖 Prediction enabled!" : "🔇 Prediction disabled.");
+  }
+
+  function deleteData() {
+    if (!confirm("⚠️ Are you sure you want to delete all gesture data?")) return;
+    localStorage.removeItem('gestureData');
+    collectedData = [];
+    alert("🗑️ Local gesture data deleted.");
+
+    fetch('http://localhost:5000/api/delete-data', { method: 'DELETE' })
+      .then(res => res.json())
+      .then(response => {
+        alert(response.message ? "✅ Server gesture data deleted." : "⚠️ Failed to delete server data.");
+      })
+      .catch(err => {
+        console.error("❌ Error deleting server data:", err);
+        alert("❌ Error deleting server data.");
+      });
+  }
+
+  function compareLandmarks(recorded, live) {
+    let total = 0;
+    for (let i = 0; i < recorded.length; i++) {
+      total += Math.abs(recorded[i] - live[i]);
+    }
+    return 1 - (total / recorded.length);
+  }
+
+  function drawLandmarks(landmarks) {
+    if (!landmarks) return;
+  
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+    // Draw lines between connected landmarks
+    const connections = [
+      [0, 1], [1, 2], [2, 3], [3, 4],
+      [0, 5], [5, 6], [6, 7], [7, 8],
+      [0, 9], [9, 10], [10, 11], [11, 12],
+      [0, 13], [13, 14], [14, 15], [15, 16],
+      [0, 17], [17, 18], [18, 19], [19, 20]
+    ];
+  
+    connections.forEach(([startIdx, endIdx]) => {
+      const start = landmarks[startIdx];
+      const end = landmarks[endIdx];
+  
+      const startX = start.x * canvas.width;
+      const startY = start.y * canvas.height;
+      const endX = end.x * canvas.width;
+      const endY = end.y * canvas.height;
+  
+      // Add neon glow effect
+      const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
+      gradient.addColorStop(0, '#00ffcc');
+      gradient.addColorStop(1, '#0066ff');
+  
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#00ffff';
+      ctx.shadowBlur = 10;
+      ctx.stroke();
+    });
+  
+    // Draw dots at landmarks
+    landmarks.forEach(landmark => {
+      const x = landmark.x * canvas.width;
+      const y = landmark.y * canvas.height;
+  
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = 'blue';
+      ctx.shadowColor = 'red';
+      ctx.shadowBlur = 15;
+      ctx.fill();
+    });
+  }
+  
+  function drawPredictionText(text) {
+    ctx.font = "24px Segoe UI";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(15, 15, ctx.measureText(text).width + 10, 30);
+    ctx.fillStyle = "#28a745";
+    ctx.fillText(text, 20, 40);
+  }
+  function mergeByLabel(data) {
+    const labelMap = {};
+    data.forEach(({ label, landmarks }) => {
+      if (!labelMap[label]) {
+        labelMap[label] = [];
+      }
+      labelMap[label].push({ label, landmarks });
+    });
+  
+    // Flatten into a single array
+    return Object.values(labelMap).flat();
+  }
+  
+  function drawPredictionText(text) {
+    ctx.font = "24px Segoe UI";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(15, 15, ctx.measureText(text).width + 10, 30);
+    ctx.fillStyle = "#28a745";
+    ctx.fillText(text, 20, 40);
+  }
+
+  function mergeByLabel(data) {
+    const labelMap = {};
+    data.forEach(({ label, landmarks }) => {
+      labelMap[label] = { label, landmarks };
+    });
+    return Object.values(labelMap);
+  }
+
+  function downloadData() {
+    if (collectedData.length === 0) {
+      alert("❌ No gesture data to upload.");
+      return;
+    }
+
+    const mergedData = mergeByLabel(collectedData);
+
+    fetch('http://localhost:5000/api/save-data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(mergedData)
+    })
+      .then(res => res.json())
+      .then(response => {
+        alert(response.message ? "✅ Gesture data saved to server!" : "❌ Failed to save gesture data.");
+      })
+      .catch(err => {
+        console.error("❌ Error uploading gesture data:", err);
+        alert("❌ Error uploading gesture data.");
+      });
+
+    const blob = new Blob([JSON.stringify(mergedData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const label = gestureInput.value.trim() || "gesture_data";
+    a.download = `${label}_data.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function addMessage(sender, text) {
+    const div = document.createElement("div");
+    div.className = `message ${sender}-message`;
+    div.textContent = text;
+    chatContainer.appendChild(div);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function sendChatMessage() {
+    const trimmed = currentSentence.trim();
+    if (!trimmed) return;
+    socket.emit("gestureMessage", trimmed);
+    addMessage("user", "You: " + trimmed);
+    currentSentence = "";
+    messageInput.value = "";
+    predictionElement.textContent = "Waiting...";
+  }
+
+  sendButton.addEventListener("click", sendChatMessage);
+</script>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const socket = io('http://localhost:5001');
+
+  socket.on("gestureMessage", (data) => {
+    addMessage("peer", "Friend: " + data);
+  });
+</script>
+<script>
+  // Detect if the page is being refreshed
+  if (performance.navigation.type === 1) {
+    // Redirect to landing page
+    window.location.href = "index.html"; // or "/" if using a framework
+  }
+</script>
+
+  </body>
+</html>

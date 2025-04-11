@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@tensorflow-models/handpose": "^0.1.0",
+    "@tensorflow/tfjs": "^4.22.0",
+    "expo-camera": "^16.0.18",
+    "express": "^5.1.0",
+    "react-native-gesture-handler": "^2.25.0",
+    "react-native-svg": "^15.11.2",
+    "react-native-unimodules": "^0.15.0",
+    "socket.io": "^4.8.1"
+  }
+}
