@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gesture Meet - Video Conferencing</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background: url("bg.jpg") no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+    }
+    .navbar {
+      width: 100%;
+      padding: 30px 0;
+      text-align: center;
+      font-size: 32px;
+      font-weight: bold;
+      color: #002B5B;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    
+      /* Animated gradient wave */
+      background: linear-gradient(270deg, rgba(208, 231, 255, 0.4), rgba(255, 255, 255, 0.2), rgba(208, 231, 255, 0.4));
+      background-size: 400% 400%;
+      animation: waveFlow 10s ease-in-out infinite;
+    
+      /* Transparency & glass effect */
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    
+      letter-spacing: 1px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 60px;
+      margin-left: 500px;
+      padding: 50px 40px;
+      width: 90%;
+      max-width: 450px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: black;
+      animation: fadeIn 1.2s ease;
+    }
+    input, button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      max-width: 320px;
+      padding: 12px 18px;
+      margin-top: 15px;
+      font-size: 17px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: black;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(100, 149, 237, 0.25));
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      transition: all 0.3s ease-in-out;
+    }
+    #video-loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 2.5s ease;
+      overflow: hidden;
+    }
+    
+    #video-loader video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Ensures full screen, may crop slightly */
+    }
+    
+    
+    button:hover {
+      background: linear-gradient(145deg, rgba(100, 149, 237, 0.35), rgba(255, 255, 255, 0.2));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(100, 149, 237, 0.4);
+    }
+
+    input {
+      width: 200px;
+    }
+
+    footer {
+      background-color: rgba(255, 255, 255, 0.6);
+      color: #003366;
+      padding: 15px 0;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+      @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .container h2 {
+    font-size: 28px;
+    margin-bottom: 25px;
+    font-weight: 600;
+    color: #f0f0f0;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+  }
+
+  input {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px 15px;
+    margin: 12px 0;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.2);
+    transition: 0.3s;
+  }
+
+  input::placeholder {
+    color: #ddd;
+  }
+
+  input:focus {
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  }
+
+  button {
+    width: 100%;
+    max-width: 320px;
+    padding: 12px 15px;
+    margin-top: 15px;
+    font-size: 17px;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    color: #fff;
+    background: linear-gradient(to right, #4facfe, #00f2fe);
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+    transition: 0.3s ease;
+  }
+
+  button:hover {
+    background: linear-gradient(to right, #00f2fe, #4facfe);
+    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
+  }
+
+  @keyframes waveFlow {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+    }
+  </style>
+</head>
+<body>
+  <div id="video-loader">
+    <video autoplay muted playsinline id="intro-video" disablePictureInPicture>
+
+      <source src="introvideo.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+  </div>
+  
+  <div class="navbar">
+    <span class="brand">• श्रावणी •</span>
+  </div>
+  
+
+  <div class="container">
+    <h2>Welcome to Gesture Meet</h2>
+    <button onclick="hostMeeting()">Host a Meeting</button>
+    <br><br>
+    <input type="text" id="roomIdInput" placeholder="Enter Room ID">
+    <button onclick="joinMeeting()">Join Meeting</button>
+  </div>
+
+  <footer>
+    © 2025 Gesture Meet. All rights reserved.
+  </footer>
+
+  <!-- ✅ Include Socket.IO -->
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+
+  <script>
+const socket = io(process.env.REACT_APP_SOCKET_URL);
+
+
+    let createdRooms = [];
+
+    function generateRoomId(length = 5) {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      return Array.from({ length }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
+    }
+    
+
+    function hostMeeting() {
+      const roomId = generateRoomId();
+      createdRooms.push(roomId);
+      socket.emit("create-room", roomId);
+      redirectToRoom(roomId);
+    }
+
+    function joinMeeting() {
+      const roomId = document.getElementById("roomIdInput").value.trim();
+      
+      // ✅ Validate for exactly 5 characters
+      if (roomId.length !== 5) {
+        alert("Room ID must be exactly 5 characters.");
+        return;
+      }
+    
+      socket.emit("join-room", roomId); // Emit the event to join the room
+      redirectToRoom(roomId);
+    }
+    
+    function redirectToRoom(roomId) {
+      window.location.href = `landingpage.html?roomId=${roomId}`;
+    }
+  </script>
+  <script>
+    const loader = document.getElementById("video-loader");
+    const introVideo = document.getElementById("intro-video");
+  
+    // Remove loader when video ends
+    introVideo.onended = () => {
+      loader.style.opacity = 0;
+      setTimeout(() => loader.style.display = "none", 1000);
+    };
+  
+    // Optional: fallback in case video doesn't fire `onended`
+    setTimeout(() => {
+      loader.style.opacity = 0;
+      setTimeout(() => loader.style.display = "none", 1000);
+    }, 5000); // 5 seconds fallback
+  </script>
+  
+</body>
+</html>

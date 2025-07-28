@@ -1,0 +1,91 @@
+.meet-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: sans-serif;
+  background: #f0f2f5;
+}
+
+.top-bar {
+  background: #202124;
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.video-section {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+  flex: 1;
+  background: #000;
+}
+
+.video-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+}
+
+.video {
+  width: 320px;
+  height: 240px;
+  background: black;
+  border-radius: 10px;
+}
+
+.chat-section {
+  width: 300px;
+  background: white;
+  border-left: 1px solid #ccc;
+  padding: 10px;
+  overflow-y: auto;
+  position: absolute;
+  right: 0;
+  top: 60px;
+  bottom: 0;
+}
+
+.messages {
+  height: 200px;
+  overflow-y: scroll;
+  margin-bottom: 10px;
+}
+
+.input-area {
+  display: flex;
+  gap: 5px;
+}
+
+.input-area input {
+  flex: 1;
+  padding: 5px;
+}
+
+.input-area button {
+  padding: 5px 10px;
+}
+
+.gesture-box {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #555;
+}
+
+.user-id {
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.leave-btn {
+  background: crimson;
+  border: none;
+  padding: 5px 10px;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
